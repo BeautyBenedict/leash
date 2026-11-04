@@ -1,0 +1,22 @@
+[package]
+name = "leash-contract"
+version = "0.1.0"
+edition = "2021"
+description = "Leash: policy-enforced vault that lets AI agents spend NEAR only within human-set rules"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = "5"
+
+[dev-dependencies]
+near-sdk = { version = "5", features = ["unit-testing"] }
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true
