@@ -21,10 +21,10 @@ const SCAM = need("SCAM_ACCOUNT");
 const near = (n: number) => BigInt(Math.round(n * 1000)) * 10n ** 21n; // n NEAR in yocto
 
 const scenarios = [
-  { name: "Pay vendor 1 NEAR", to: VENDOR, amount: 1, expect: "Paid" },
-  { name: "Pay vendor 6 NEAR (over per-tx limit)", to: VENDOR, amount: 6, expect: "Denied" },
-  { name: "Pay unlisted scam wallet 1 NEAR", to: SCAM, amount: 1, expect: "Denied" },
-  { name: "Pay vendor 3 NEAR (over approval threshold)", to: VENDOR, amount: 3, expect: "PendingApproval" },
+  { name: "Pay vendor 0.1 NEAR", to: VENDOR, amount: 0.1, expect: "Paid" },
+  { name: "Pay vendor 0.6 NEAR (over per-tx limit)", to: VENDOR, amount: 0.6, expect: "Denied" },
+  { name: "Pay unlisted scam wallet 0.1 NEAR", to: SCAM, amount: 0.1, expect: "Denied" },
+  { name: "Pay vendor 0.3 NEAR (over approval threshold)", to: VENDOR, amount: 0.3, expect: "PendingApproval" },
 ] as const;
 
 async function main() {

@@ -52,3 +52,9 @@ button:disabled { opacity: 0.5; cursor: default; }
 button.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
 button.danger { background: var(--bad); color: #1a0606; }
 footer { text-align: center; }
+
+textarea {
+  background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px;
+  font-size: 15px; font-family: inherit; resize: vertical; width: 100%;
+}
+button.small { font-size: 12px; padding: 6px 10px; text-align: left; }
