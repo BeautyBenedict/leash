@@ -28,6 +28,8 @@ export async function POST(req: Request) {
     const outcome = await requestPayment(to, amount, String(body.memo ?? "demo payment"));
     return NextResponse.json({ outcome });
   } catch (e) {
-    return NextResponse.json({ error: `Agent call failed: ${String(e).slice(0, 200)}` }, { status: 502 });
+    const err = e as Error;
+    const frames = (err.stack ?? "").split("\n").slice(1, 4).map((l) => l.trim().replace(/\(.*node_modules\//, "(")).join(" | ");
+    return NextResponse.json({ error: `Agent call failed: ${String(err.message ?? e).slice(0, 160)} [${frames}]` }, { status: 502 });
   }
 }
