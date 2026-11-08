@@ -1,12 +1,13 @@
 // Server-only: the agent account asks the Leash contract to pay. The agent key never reaches the browser.
 import { connect, keyStores, KeyPair } from "near-api-js";
 import { nearToYocto } from "./validate";
+import { clean } from "./env";
 
 export type Outcome = "Paid" | { PendingApproval: { id: number } } | { Denied: { reason: string } };
 
-const CONTRACT = process.env.NEXT_PUBLIC_LEASH_CONTRACT ?? "";
-const AGENT = process.env.AGENT_ACCOUNT ?? "";
-const KEY = process.env.AGENT_PRIVATE_KEY ?? "";
+const CONTRACT = clean(process.env.NEXT_PUBLIC_LEASH_CONTRACT);
+const AGENT = clean(process.env.AGENT_ACCOUNT);
+const KEY = clean(process.env.AGENT_PRIVATE_KEY);
 
 export function agentConfigured(): boolean {
   return !!(CONTRACT && AGENT && KEY);

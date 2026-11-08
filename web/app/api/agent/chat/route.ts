@@ -2,6 +2,7 @@
 // The Leash contract, not the model, enforces limits, allowlist, risk checks and owner approval.
 import { NextResponse } from "next/server";
 import { agentConfigured, requestPayment } from "../../../../lib/payments";
+import { clean } from "../../../../lib/env";
 import { limited } from "../../../../lib/limit";
 import { runAgent, TOOLS, type LlmFn } from "../../../../lib/agent-loop";
 
@@ -11,7 +12,7 @@ export const maxDuration = 60;
 
 // Any OpenAI-compatible provider works. Defaults to Groq's free tier.
 const BASE = process.env.LLM_BASE_URL ?? "https://api.groq.com/openai/v1";
-const KEY = process.env.LLM_API_KEY ?? "";
+const KEY = clean(process.env.LLM_API_KEY);
 const MODEL = process.env.LLM_MODEL ?? "openai/gpt-oss-120b";
 
 const llm: LlmFn = async (messages) => {
