@@ -1,13 +1,15 @@
 // Server-only: the agent account asks the Leash contract to pay. The agent key never reaches the browser.
-import { connect, keyStores, KeyPair } from "near-api-js";
+import { connect, keyStores } from "near-api-js";
 import { nearToYocto } from "./validate";
 import { clean } from "./env";
+import { agentKeyPair } from "./key";
 
 export type Outcome = "Paid" | { PendingApproval: { id: number } } | { Denied: { reason: string } };
 
 const CONTRACT = clean(process.env.NEXT_PUBLIC_LEASH_CONTRACT);
 const AGENT = clean(process.env.AGENT_ACCOUNT);
 const KEY = clean(process.env.AGENT_PRIVATE_KEY);
+const RAW_KEY = process.env.AGENT_PRIVATE_KEY;
 
 export function agentConfigured(): boolean {
   return !!(CONTRACT && AGENT && KEY);
@@ -15,7 +17,7 @@ export function agentConfigured(): boolean {
 
 export async function requestPayment(to: string, amountNear: string, memo: string): Promise<Outcome> {
   const keyStore = new keyStores.InMemoryKeyStore();
-  await keyStore.setKey("testnet", AGENT, KeyPair.fromString(KEY as `ed25519:${string}`));
+  await keyStore.setKey("testnet", AGENT, agentKeyPair(RAW_KEY));
   const conn = await connect({
     networkId: "testnet",
     keyStore,
