@@ -64,7 +64,7 @@ function describe(o: Outcome, stillPending: Set<number>) {
   if ("PendingApproval" in o) {
     return stillPending.has(o.PendingApproval.id)
       ? { text: `Waiting for approval (#${o.PendingApproval.id})`, color: "var(--warn)" }
-      : { text: `Held for approval (#${o.PendingApproval.id}), since handled`, color: "var(--muted)" };
+      : { text: `Was held for approval (#${o.PendingApproval.id}), now handled by the owner`, color: "var(--ok)" };
   }
   return { text: `Blocked: ${o.Denied.reason}`, color: "var(--bad)" };
 }
@@ -82,6 +82,7 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [agentBusy, setAgentBusy] = useState(false);
   const [agentMsg, setAgentMsg] = useState<{ text: string; color: string } | null>(null);
+  const [agentOutcome, setAgentOutcome] = useState<Outcome | null>(null);
   const [tryTo, setTryTo] = useState("beauty-vendor.testnet");
   const [tryAmt, setTryAmt] = useState("0.1");
   const [chatText, setChatText] = useState("");
@@ -171,6 +172,7 @@ export default function Home() {
   async function runAgent(to: string, amount: string, memo: string) {
     setAgentBusy(true);
     setAgentMsg(null);
+    setAgentOutcome(null);
     try {
       const res = await fetch("/api/agent", {
         method: "POST",
@@ -179,11 +181,7 @@ export default function Home() {
       });
       const json = await res.json();
       if (!res.ok) setAgentMsg({ text: json.error ?? "Something went wrong", color: "var(--bad)" });
-      else {
-        const o = json.outcome as Outcome;
-        const waiting = new Set<number>(typeof o === "object" && "PendingApproval" in o ? [o.PendingApproval.id] : []);
-        setAgentMsg(describe(o, waiting));
-      }
+      else setAgentOutcome(json.outcome as Outcome);
       await load();
     } catch (e) {
       setAgentMsg({ text: String(e), color: "var(--bad)" });
@@ -235,6 +233,7 @@ export default function Home() {
     });
 
   const pendingIds = new Set(pending.map((p) => p.id));
+  const agentView = agentOutcome ? describe(agentOutcome, pendingIds) : agentMsg;
   const dailyPct = policy ? Math.min(100, (Number(BigInt(spent) * 1000n / (BigInt(policy.daily_limit) || 1n)) / 10)) : 0;
 
   return (
@@ -335,8 +334,7 @@ export default function Home() {
             {chatRes.payments.length === 0 && <p className="muted small">The agent did not attempt any payment.</p>}
             {chatRes.payments.map((p, i) => {
               const o = p.outcome;
-              const waiting = new Set<number>(typeof o === "object" && "PendingApproval" in o ? [o.PendingApproval.id] : []);
-              const d = describe(o, waiting);
+              const d = describe(o, pendingIds);
               return (
                 <div key={i} className="item" style={{ borderColor: d.color }}>
                   <div>
@@ -374,9 +372,9 @@ export default function Home() {
         <button className="ghost" disabled={agentBusy} onClick={() => runAgent(tryTo, tryAmt, "custom payment")}>
           {agentBusy ? "Agent is asking..." : "Send custom payment"}
         </button>
-        {agentMsg && (
-          <div className="item" style={{ borderColor: agentMsg.color, marginTop: 14 }}>
-            <div style={{ color: agentMsg.color, fontWeight: 600 }}>{agentMsg.text}</div>
+        {agentView && (
+          <div className="item" style={{ borderColor: agentView.color, marginTop: 14 }}>
+            <div style={{ color: agentView.color, fontWeight: 600 }}>{agentView.text}</div>
           </div>
         )}
       </section>
